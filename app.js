@@ -82,6 +82,7 @@ const itemSize = {width: 10, height: 10};
 
 
   //---------MAIN ELEMENTS
+let table = document.querySelector('table.container'); 
 const tbody = document.querySelector('table.container tbody');
 const firstYearSelect = document.querySelector('select.firstYearSelect');
 let lastYearSelect = document.querySelector('select.lastYearSelect');
@@ -90,6 +91,7 @@ const checkbox = document.querySelector('div.checkbox');
 
 // ----- MAIN LOGIC
 let objectsData = allObjectsData.slice();
+console.log(objectsData);  //////////////////////////////////////////////////////////////////////////////////////////////////
 let checkboxValues;
 const years = getPeriodArray(new Date(minPossibleDate).getFullYear(), new Date(maxPossibleDate). getFullYear());
 const minYear = d3.min(years);
@@ -106,25 +108,29 @@ checkboxValues = getCheckboxValues();
 
 
 // ------------- VALUES FOR CONSTRUCTING
-let bodyWidth, objectCell, monthWidth, bodyHeight;
+ let bodyWidth = document.querySelector('table.container tbody').clientWidth;
+ let objectCell = {width: bodyWidth/periodArray.length, height: 200};
+ let monthWidth = objectCell.width/12;
+ let bodyHeight = objectsData.length * (objectCell.height + 3);
 const firstColumnWidthPerc = '10vw';
+const thHeight = 100;
 
 const svg = d3
   .create('svg')
   .attr('class', 'svgContainer')
-  .style('position', 'absolute');
+  .style('position', 'absolute')
+  .attr('width', bodyWidth).attr('height', bodyHeight);
 
-calculateSizes();
 tableInit();
 let tdHeight = document.querySelector('td.tdYear').clientHeight;
 createSvg();
 
 
-// Insert svg before first <tr> in body (with traslation on first col width)
+// Insert svg before first element in body (with traslation on first col width)
 const firstRow = document.querySelector('table.container tbody tr');
 const firstColWidth = firstRow.querySelector('td').clientWidth;
-svg.attr('transform', 'translate(' + firstColWidth + ' 0)');
-tbody.insertBefore(svg.node(), firstRow);
+svg.attr('transform', 'translate(' + firstColWidth + ' ' + thHeight + ')');
+document.querySelector('#printArea').insertBefore(svg.node(), table);
 createLabels();
 
 // Changes control
@@ -133,6 +139,7 @@ document.querySelector('select.firstYearSelect').addEventListener('change', func
   fillLastYearSelect();
   periodArray = getPeriodArray(firstYearSelected, Number(lastYearSelect[lastYearSelect.selectedIndex].value));
   updateObjectsData(periodArray);
+  updateTableWidth();
   renderTablePlusSvg();
 })
 
@@ -140,11 +147,17 @@ document.querySelector('select.lastYearSelect').addEventListener('change', funct
   lastYearSelected = Number(lastYearSelect[lastYearSelect.selectedIndex].value);
   periodArray = getPeriodArray(Number(firstYearSelect[firstYearSelect.selectedIndex].value), lastYearSelected);
   updateObjectsData(periodArray);
+  updateTableWidth();
   renderTablePlusSvg();
 })
 
 checkbox.addEventListener('change', function(){
   checkboxValues = getCheckboxValues();
+  if(checkboxValues.length === 0){
+    table.classList.add('hideElement');
+  }else{
+    table.classList.remove('hideElement');
+  }
   updateObjectsData(null);
   renderTablePlusSvg();
 })
@@ -183,25 +196,24 @@ function updateObjectsData(yearsArray){
   }  
 }
 
-
-function calculateSizes(){
+function updateTableWidth(){
   bodyWidth = document.querySelector('table.container tbody').clientWidth;
   objectCell = {width: bodyWidth/periodArray.length, height: 200};
   monthWidth = objectCell.width/12;
-  bodyHeight = objectsData.length * objectCell.height;
-  svg.attr('width', bodyWidth).attr('height', bodyHeight);
+  svg.attr('width', bodyWidth);
 }
 
 function renderTablePlusSvg(){
 
-  calculateSizes();
+  bodyHeight = objectsData.length * (objectCell.height + 3);
+  svg.attr('height', bodyHeight);
   tableInit();
   createSvg();
 
   const firstRow = document.querySelector('table.container tbody tr');
   const firstColWidth = firstRow.querySelector('td').clientWidth;
-  svg.attr('transform', 'translate(' + firstColWidth + ' 0)');
-  tbody.insertBefore(svg.node(), firstRow);
+  svg.attr('transform', 'translate(' + firstColWidth + ' ' + thHeight + ')');
+  document.querySelector('#printArea').insertBefore(svg.node(), table);
   createLabels();
 }
 
@@ -378,7 +390,7 @@ objectsData.forEach(function(obj, index){
   .style('font-size', 18)
   .text(e => e.title)
   .attr('x', e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).x + 15)
-  .attr('y',  e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).y + 10);
+  .attr('y',  e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).y + 25);
 
   let dateLabel = realDateLabel
   .append('text')
@@ -386,7 +398,7 @@ objectsData.forEach(function(obj, index){
   .attr('class', 'dateLabel')
   .style('font-size', 14)
   .attr('x', e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).x + 15)
-  .attr('y', e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).y + 25);
+  .attr('y', e => getRectCoordinates('eventsPair' + obj.objectId, 'real' + obj.events.indexOf(e)).y + 40);
 
 })
 
@@ -487,16 +499,25 @@ function createSplittedCell(){
   return table;
 }
 
-function printTable() {
-  let tableToPrint = document.body;
-  let newWindow = window.open('', '', 'height=1000, width=1000');
-  newWindow.document.write('<html><head>');
-  newWindow.document.write('<link rel="stylesheet" href="styles.css">');
-  newWindow.document.write('</head><body><div>');
-  newWindow.document.write(tableToPrint.innerHTML);
-  newWindow.document.write('</div></body>');
-  newWindow.document.close();
+// function printTable() {
+  
+//   let tableToPrint = document.querySelector('#printArea');
+//   // let newWindow = window.open('', '', 'height=1000, width=1000');
+//   // newWindow.document.write('<html><head>');
+//   // newWindow.document.write('<link rel="stylesheet" href="styles.css">');
+//   // newWindow.document.write('</head><body>');
+//   // newWindow.document.write(tableToPrint.innerHTML);
+//   // newWindow.document.write('</body>');
+//   // newWindow.document.close();
+//   // newWindow.print();
+//   // newWindow.close(); 
 
-  newWindow.print();
-  newWindow.close(); 
-}
+//   // let bodyContent = document.body.innerHTML;
+//   // document.body.innerHTML = tableToPrint;
+
+//   // document.body.style.width = '29.7cm';
+//   // document.body.style.height = '21cm';
+//   // document.body.style.transform = 'translate(-25%, -25%) scale(0.5,0.35)';
+//   // window.print();
+
+// }

@@ -7,19 +7,32 @@
     <title>Отчет по периодам</title>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="libs/dom-to-image.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" media="print">
     
-    
-    <!-- <script src="app2.js"></script> -->
 </head>
 <body>
-    <select class="firstYearSelect">
+    <div class="paramatersArea">
+        <div class="paramatersContainer">
+            <h3>Выберите период</h3>
+            <div class="selectsContainer">
+            <div class="selectDiv">
+                <span>C </span>
+                <select class="firstYearSelect"></select>
+            </div>
+            <div class="selectDiv">
+                <span>по </span>
+                <select class="lastYearSelect"></select>
+            </div>
+        </div>
+    
+            <h3>Выберите объекты</h3>
+            <div class="checkbox"></div>
+        </div>
         
-    </select>
-    <select class="lastYearSelect">
-    </select>
-    <span>Выберите объекты</span>
-    <div class="checkbox"></div>
+    </div>
+    
     <div id="printArea">
         <table class="container">
             <thead>
